@@ -5,26 +5,30 @@ use Exception;
 
 class Logger
 {
-    private static $pathToLogFile;
+    private static $pathToLogFile = "\log.txt";
     private static $classLoader = NULL;
-    private static $logLevelsList = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"];
-    private static $defaulLogLevel = "INFO";
+    private static $logLevel;
 
-    private function __construct(/*String $pathToLogFile*/){
-        $this->pathToLogFile = $pathToLogFile;
+    private function __construct(){
     }
 
-    public static function getInstance(String $pathToLogFile)
+    public static function getInstance()
     {
-        if (!self::verifyPathToLogFile($pathToLogFile)) {
-            throw new Exception("Ошибка при отрытии файла логирования! Возможно указан неверный путь к файлу");
-        }
+        
         if (self::$classLoader === null) {
             self::$classLoader = new self();
-            self::$pathToLogFile = $pathToLogFile;
         }
 
         return self::$classLoader;
+    }
+
+    public static function setPathToLogFile(String $pathToLogFile)
+    {
+        if (!self::verifyPathToLogFile($pathToLogFile)) {
+            throw new Exception("Ошибка при отрытии файла логирования! Возможно указан неверный путь к файлу");
+        } else {
+            self::$pathToLogFile = $pathToLogFile;
+        }
     }
 
     private static function verifyPathToLogFile($pathToLogFile)
@@ -38,18 +42,27 @@ class Logger
         }
     }
 
-    public static function createLog(String $textLog, String $logLevel = "INFO")
+    public static function createLog(String $textLog)
     {
         $timeNow = date("d-m-Y H:m:s");
         $file = fopen(self::$pathToLogFile, "a+");
-        $actualLoglevel = self::$defaulLogLevel;
-        foreach (self::$logLevelsList as $logLevelFromList) {
-            if ($logLevelFromList == $logLevel) {
-                $actualLoglevel = $logLevel;
-                break;
-            }
-        }
-        fwrite($file, $actualLoglevel . " >>> " . $timeNow . " >>> " . $textLog . "\n");
+        $strToLog = (self::$logLevel ? (self::$logLevel . " >>> ") : "") . $timeNow . " >>> " . $textLog . "\n";
+        fwrite($file, $strToLog);
         fclose($file);
+    }
+
+    public static function setLogLevelFatal()
+    {
+        self::$logLevel = "FATAL";
+    }
+
+    public static function setLogLevelInfo()
+    {
+        self::$logLevel = "INFO";
+    }
+
+    public static function setLogLevelWarning()
+    {
+        self::$logLevel = "WARNING";
     }
 }

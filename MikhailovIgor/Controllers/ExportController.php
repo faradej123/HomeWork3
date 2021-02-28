@@ -2,7 +2,8 @@
 namespace MikhailovIgor\Controllers;
 use MikhailovIgor\Lib\Product;
 use MikhailovIgor\Lib\ExportProduct;
-
+use MikhailovIgor\Lib\Logger;
+use Exception;
 
 class ExportController extends \Core\Controller{
 
@@ -12,40 +13,36 @@ class ExportController extends \Core\Controller{
     {
     }
 
-
     public function makeExport(String $exportFormat)
     {
+        ExportProduct::initLogger();
+        try {
+            $this->productList = $this->getProductsFromModel();
+            $exportFormat = mb_strtoupper($exportFormat);
+            ExportProduct::initLogger();
+            if ($exportFormat == "CSV") {
+                ExportProduct::makeExportInCSV($this->productList);
+            } else if ($exportFormat == "XML") {
+                ExportProduct::makeExportInXML($this->productList);
+            } else if ($exportFormat == "JSON") {
+                ExportProduct::makeExportInJSON($this->productList);
+            }
+        } catch (Exception $e) {
+            echo "Пользовательское исключение: ", $e->getMessage() , "\n";
+            ExportProduct::$logger->createLog($e->getMessage());
+        }
+    }
+
+    private function getProductsFromModel(){
         $this->loadModel("product", "Product");
         $productList = $this->product->getAll();
+        $arrWithProductObj = [];
         if (is_array($productList) && !empty($productList)) {
             foreach ($productList as $product) {
-                $this->productList[] = new Product($product["name"], $product["cost"], $product["count"]);
+                $arrWithProductObj[] = new Product($product["name"], $product["cost"], $product["count"]);
             }
         }
-        $exportFormat = mb_strtoupper($exportFormat);
-        if ($exportFormat == "CSV") {
-            $exportedStr = ExportProduct::makeExportInCSV($this->productList);
-        } else if ($exportFormat == "XML") {
-            $exportedStr = ExportProduct::makeExportInXML($this->productList);
-        } else if ($exportFormat == "JSON") {
-            $exportedStr = ExportProduct::makeExportInJSON($this->productList);
-        }
-        if ($exportedStr) {
-            $temporaryFile = tmpfile();
-            fwrite($temporaryFile, $exportedStr);
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename=Product' . $exportFormat);
-            header('Content-Transfer-Encoding: binary');
-            header('Content-Length: ' . filesize($temporaryFile));
-            readfile($temporaryFile);
-            fclose($temporaryFile);
-        }
-        //var_dump($this->productList);
-
+        return $arrWithProductObj;
     }
 
-    public function getProducts(){
-
-    }
 }
