@@ -1,11 +1,11 @@
 <?php
 namespace MikhailovIgor\Lib;
 
-use Exception;
+use MikhailovIgor\Exception\LoggerException;
 
 class Logger
 {
-    private static $pathToLogFile = "\log.txt";
+    private static $pathToLogFile = \Core\Configs\Consts::DOCUMENT_ROOT ."log.txt";
     private static $classLoader = NULL;
     private static $logLevel;
 
@@ -22,16 +22,16 @@ class Logger
         return self::$classLoader;
     }
 
-    public static function setPathToLogFile(String $pathToLogFile)
+    public function setPathToLogFile(String $pathToLogFile)
     {
-        if (!self::verifyPathToLogFile($pathToLogFile)) {
-            throw new Exception("Ошибка при отрытии файла логирования! Возможно указан неверный путь к файлу");
+        if (verifyPathToLogFile($pathToLogFile)) {
+            throw new LoggerException("Ошибка при отрытии файла логирования! Возможно указан неверный путь к файлу");
         } else {
             self::$pathToLogFile = $pathToLogFile;
         }
     }
 
-    private static function verifyPathToLogFile($pathToLogFile)
+    function verifyPathToLogFile($pathToLogFile)
     {
         $file = fopen($pathToLogFile, "a+");
         if ($file) {
@@ -42,26 +42,29 @@ class Logger
         }
     }
 
-    public static function createLog(String $textLog)
+    public function createLog(String $textLog)
     {
         $timeNow = date("d-m-Y H:m:s");
         $file = fopen(self::$pathToLogFile, "a+");
+        if (!$file) {
+            throw new LoggerException ("Ошибка при открытии файла");
+        }
         $strToLog = (self::$logLevel ? (self::$logLevel . " >>> ") : "") . $timeNow . " >>> " . $textLog . "\n";
-        fwrite($file, $strToLog);
+        $test = fwrite($file, $strToLog);
         fclose($file);
     }
 
-    public static function setLogLevelFatal()
+    public function setLogLevelFatal()
     {
         self::$logLevel = "FATAL";
     }
 
-    public static function setLogLevelInfo()
+    public function setLogLevelInfo()
     {
         self::$logLevel = "INFO";
     }
 
-    public static function setLogLevelWarning()
+    public function setLogLevelWarning()
     {
         self::$logLevel = "WARNING";
     }

@@ -3,5 +3,10 @@
     <a href="<?php echo $exportToJson ?>"><?php echo $exportToJson ?></a><br>
     <a href="<?php echo $exportToCsv ?>"><?php echo $exportToCsv ?></a><br>
 </div>
+<?php 
+    if ($message) {
+        echo "<p>" . $message ."</p>";
+    }
+?>
 
 
