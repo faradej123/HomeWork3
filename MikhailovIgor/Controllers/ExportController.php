@@ -57,10 +57,10 @@ class ExportController extends \Core\Controller{
             foreach ($productList as $product) {
                 $arrWithProductObj[] = new Product($product["name"], $product["cost"], $product["count"]);
             }
+            return $arrWithProductObj;
         } else {
             return false;
         }
-        return $arrWithProductObj;
     }
 
 }
