@@ -24,14 +24,14 @@ class Logger
 
     public function setPathToLogFile(String $pathToLogFile)
     {
-        if (verifyPathToLogFile($pathToLogFile)) {
+        if ($this->verifyPathToLogFile($pathToLogFile)) {
             throw new LoggerException("Ошибка при отрытии файла логирования! Возможно указан неверный путь к файлу");
         } else {
             self::$pathToLogFile = $pathToLogFile;
         }
     }
 
-    function verifyPathToLogFile($pathToLogFile)
+    private function verifyPathToLogFile($pathToLogFile)
     {
         $file = fopen($pathToLogFile, "a+");
         if ($file) {

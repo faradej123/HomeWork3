@@ -4,10 +4,12 @@ namespace MikhailovIgor\Lib;
 use MikhailovIgor\Lib\Product;
 use \Exception;
 use \XMLWriter;
-use MikhailovIgor\Lib\Logger;
 
 class ExportProduct extends \MikhailovIgor\Lib\Export implements \MikhailovIgor\Interfaces\iExportFormats {
-    private function __construct(){}
+    private function __construct()
+    {
+        
+    }
 
     public static function makeExportInCSV($productList)
     {
@@ -16,10 +18,13 @@ class ExportProduct extends \MikhailovIgor\Lib\Export implements \MikhailovIgor\
             foreach($productList as $product) {
                 if ($product instanceof Product) {
                     $csvStr .= ($product->getName() ? $product->getName() : "NULL") . ";" . ($product->getCost() ? $product->getCost() : "NULL") . ";" . ($product->getCount() ? $product->getCount() : "NULL") . "\n";
+                } else {
+                    continue;
                 }
             }
-        } else if ($product instanceof Product) {
-            $csvStr .= ($product->getName() ? $product->getName() : "NULL") . ";" . ($product->getCost() ? $product->getCost() : "NULL") . ";" . ($product->getCount() ? $product->getCount() : "NULL") . "\n";
+        } else if ($productList instanceof Product) {
+            $csvStr .= ($productList->getName() ? $productList->getName() : "NULL") . ";" . ($productList->getCost() ? $productList->getCost() : "NULL") . ";" . ($productList->getCount() ? $productList->getCount() : "NULL") . "\n";
+        } else {
         }
         $fileName = "ProductExport.csv";
         return self::sendFileToDownload($fileName, $csvStr);
@@ -30,7 +35,7 @@ class ExportProduct extends \MikhailovIgor\Lib\Export implements \MikhailovIgor\
         $xmlObj = new XMLWriter();
         $xmlObj->openMemory();
         $xmlObj->setIndent(2);
-        $xmlObj->startDocument();
+        $xmlObj->startDocument('1.0', 'UTF-8');
         if (is_array($productList) && !empty($productList)) {
             foreach($productList as $product) {
                 if ($product instanceof Product) {
@@ -42,6 +47,8 @@ class ExportProduct extends \MikhailovIgor\Lib\Export implements \MikhailovIgor\
                     $count = $product->getCount();
                     $xmlObj->writeAttribute('Count', $count ? $count : "NULL");
                     $xmlObj->endElement();
+                } else {
+                    continue;
                 }
             }
         } else if ($productList instanceof Product) {
@@ -53,6 +60,7 @@ class ExportProduct extends \MikhailovIgor\Lib\Export implements \MikhailovIgor\
             $count = $productList->getCount();
             $xmlObj->writeAttribute('Count', $count ? $count : NULL);
             $xmlObj->endElement();
+        } else {
         }
         $xmlObj->endDocument();
         $xmlStr = $xmlObj->flush();
@@ -83,7 +91,7 @@ class ExportProduct extends \MikhailovIgor\Lib\Export implements \MikhailovIgor\
                 "count" => $productList->getCount(),
             ];
         }
-        $jsonStr = json_encode($newObj);
+        $jsonStr = json_encode($newObj, JSON_UNESCAPED_UNICODE);
         $fileName = "ProductExport.json";
         return self::sendFileToDownload($fileName, $jsonStr);
     }
